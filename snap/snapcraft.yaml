@@ -104,7 +104,7 @@ apps:
     command: bin/joplin server start
     stop-command: bin/joplin server stop
     daemon: simple
-    install-mode: disable
+    #install-mode: disable # Enable this once reviews-tools support it
     plugs:
       - network
       - network-bind
