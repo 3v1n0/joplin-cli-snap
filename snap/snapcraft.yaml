@@ -1,0 +1,111 @@
+name: joplin
+adopt-info: joplin
+license: MIT
+summary: Open source note taking and to-do application - Terminal version
+description: |
+  Joplin is a free, open source note taking and to-do application, which can
+  handle a large number of notes organised into notebooks. The notes are
+  searchable, can be copied, tagged and modified either from a text editor (the
+  snap includes neovim and nano only). The notes are in Markdown format.
+  The notes can be synchronised with various cloud services including Nextcloud,
+  Dropbox, OneDrive, WebDAV or the file system (for example with a network
+  directory). When synchronising the notes, notebooks, tags and other metadata
+  are saved to plain text files which can be easily inspected, backed up and
+  moved around.
+
+  This is the terminal application. The default editor can be switched using:
+    joplin config editor /snap/joplin/current/usr/bin/nvim # default
+    joplin config editor /snap/joplin/current/bin/nano # easier alternative
+
+  This snap can be also used as a Web Clipper server that can be used to
+  integrate the notes with other applications or in a remote host using
+  joplin-web.
+
+  The server is not running by default, but can be enabled by using:
+    snap set joplin server.enabled=true
+
+base: core20
+grade: stable
+confinement: strict
+
+architectures:
+  - build-on: amd64
+  - build-on: arm64
+  - build-on: armhf
+  - build-on: ppc64el
+  - build-on: s390x
+
+parts:
+  joplin:
+    plugin: nil
+    source: https://github.com/laurent22/joplin.git
+    source-depth: 1
+    build-packages:
+      - curl
+      - libsecret-1-0
+    override-pull: |
+      NODE_MAJOR_VERSION=14
+      node_arch=${SNAPCRAFT_TARGET_ARCH}
+
+      if [ "$node_arch" = "amd64" ]; then
+        node_arch=x64
+      elif [ "$node_arch" = "ppc64el" ]; then
+        node_arch=ppc64le
+      elif [ "$node_arch" = "armhf" ]; then
+        node_arch=armv7l
+      fi
+
+      node_base_path=https://nodejs.org/dist/latest-v${NODE_MAJOR_VERSION}.x/
+      node_archive=$(curl "$node_base_path" |
+        grep -o "node-v${NODE_MAJOR_VERSION}\.[0-9.]\+-linux-${node_arch}\.tar.gz" | head -1)
+      node_uri="$node_base_path/$node_archive"
+      curl -s "$node_uri" --output node.tar.gz
+    build-environment:
+      - npm_config_prefer_offline: 'true'
+      - npm_config_unsafe_perm: 'true'
+      - SUDO_UID: '0'
+      - SUDO_GID: '0'
+      - SUDO_USER: root
+      - PATH: "${PATH}:${SNAPCRAFT_PART_INSTALL}/bin"
+    override-build: |
+      tar xzf node.tar.gz -C "${SNAPCRAFT_PART_INSTALL}/" --strip-components=1
+      npm install -g --prefix "${SNAPCRAFT_PART_INSTALL}" joplin
+      snapcraftctl set-version $(npm view -g joplin version)
+    stage-packages:
+      - libsecret-1-0
+
+  editors:
+    plugin: nil
+    stage-packages:
+      - nano
+      - neovim
+
+layout:
+  /usr/libexec/neovim:
+    bind: $SNAP/usr/libexec/neovim
+  /usr/share/nano:
+    bind: $SNAP/usr/share/nano
+  /etc/nanorc:
+    bind-file: $SNAP/etc/nanorc
+
+apps:
+  joplin:
+    command: bin/joplin
+    plugs:
+      - home
+      - network
+      - network-bind
+      - password-manager-service
+      - removable-media
+    environment:
+      EDITOR: $SNAP/usr/bin/nvim # Would be nice to be able to use the host $EDITOR
+
+  server:
+    command: bin/joplin server start
+    stop-command: bin/joplin server stop
+    daemon: simple
+    install-mode: disable
+    plugs:
+      - network
+      - network-bind
+      - password-manager-service

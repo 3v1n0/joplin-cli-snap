@@ -1,0 +1,14 @@
+#!/bin/sh
+set -e
+
+enabled="$(snapctl get server.enabled)"
+
+if [ "$enabled" = "true" ] || [ "$enabled" = "on" ] || [ "$enabled" = "1" ]; then
+    echo "Enabling server..."
+    snapctl start joplin.server --enable
+    snapctl set server.enabled=true
+else
+    echo "Disabling server..."
+    snapctl stop joplin.server --disable
+    snapctl set server.enabled=false
+fi
