@@ -32,8 +32,9 @@ architectures:
   - build-on: amd64
   - build-on: arm64
   - build-on: armhf
-  - build-on: ppc64el
-  - build-on: s390x
+  # Require newer versions of libvisp
+  # - build-on: ppc64el
+  # - build-on: s390x
 
 parts:
   joplin:
@@ -42,7 +43,12 @@ parts:
     source-depth: 1
     build-packages:
       - curl
-      - libsecret-1-0
+      - libsecret-1-dev
+      - python
+      - on ppc64el:
+        - libvips-dev
+      - on s390x:
+        - libvips-dev
     override-pull: |
       NODE_MAJOR_VERSION=14
       node_arch=${SNAPCRAFT_TARGET_ARCH}
