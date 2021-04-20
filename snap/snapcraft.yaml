@@ -40,11 +40,11 @@ parts:
   joplin:
     plugin: nil
     source: https://github.com/laurent22/joplin.git
-    source-depth: 1
     build-packages:
       - curl
       - libsecret-1-dev
       - python
+      - rsync
       - on ppc64el:
         - libvips-dev
       - on s390x:
@@ -61,6 +61,9 @@ parts:
         node_arch=armv7l
       fi
 
+      snapcraftctl pull
+      snapcraftctl set-version $(git describe --tags --match "cli-v*" | sed s,^cli-v,,)
+
       node_base_path=https://nodejs.org/dist/latest-v${NODE_MAJOR_VERSION}.x/
       node_archive=$(curl "$node_base_path" |
         grep -o "node-v${NODE_MAJOR_VERSION}\.[0-9.]\+-linux-${node_arch}\.tar.gz" | head -1)
@@ -75,8 +78,27 @@ parts:
       - PATH: "${PATH}:${SNAPCRAFT_PART_INSTALL}/bin"
     override-build: |
       tar xzf node.tar.gz -C "${SNAPCRAFT_PART_INSTALL}/" --strip-components=1
-      npm install -g --prefix "${SNAPCRAFT_PART_INSTALL}" joplin
-      snapcraftctl set-version $(npm view -g joplin version)
+
+      if git describe --tags --match "cli-v*" --candidates=0; then
+        # We're on release commit, let's just use the released version!
+        npm install -g --prefix "${SNAPCRAFT_PART_INSTALL}" joplin
+        snapcraftctl set-version $(npm view -g joplin version)
+        exit 0
+      fi
+
+      npm install
+
+      cd packages/app-cli
+      module_name=$(node -p "try { require('./package.json').name } catch(e) {''}")
+
+      module_path="${SNAPCRAFT_PART_INSTALL}"/lib/node_modules/$module_name
+      cp -v app/*.js build
+      cd build && npm install -g --prefix "${SNAPCRAFT_PART_INSTALL}"
+      if [ -L "$module_path" ]; then
+        target=$(realpath "$module_path")
+        rm -f "$module_path"
+        cp -a "$target" "$module_path"
+      fi
     stage-packages:
       - libsecret-1-0
 
@@ -85,6 +107,25 @@ parts:
     stage-packages:
       - nano
       - neovim
+
+  cleanup:
+    after:
+      - joplin
+      - editors
+    plugin: nil
+    build-snaps: [core20]
+    override-prime: |
+      set -eux
+      build_snaps=core20
+      for snap in $build_snaps; do
+        cd "/snap/$snap/current" && \
+        find . -type f,l -exec rm -fv "$SNAPCRAFT_PRIME/{}" "$SNAPCRAFT_PRIME/usr/{}" \;
+      done
+      for CRUFT in bug lintian man; do
+        rm -rf $SNAPCRAFT_PRIME/usr/share/$CRUFT
+      done
+      find $SNAPCRAFT_PRIME/usr/share/doc/ -type f -not -name 'copyright' -delete
+      find $SNAPCRAFT_PRIME/usr/share -type d -empty -delete
 
 layout:
   /usr/libexec/neovim:
