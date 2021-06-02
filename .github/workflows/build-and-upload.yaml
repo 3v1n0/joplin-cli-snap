@@ -1,0 +1,31 @@
+name: Build and push to store
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: snapcore/action-build@v1
+      id: snapcraft-build
+      env:
+        TERM: dumb
+    - uses: snapcore/action-publish@v1
+      env:
+        TERM: dumb
+      with:
+        store_login: ${{ secrets.SNAPCRAFT_LOGIN }}
+        snap: ${{ steps.snapcraft-build.outputs.snap }}
+        release: edge
+    - name: Promote stable versions
+      run: |
+        snap_name=$(echo ${{ steps.snapcraft.outputs.snap }} | grep "[a-z0-9]\+_" -o | head -1 | sed "s/_//")
+        if echo ${{ steps.snapcraft.outputs.snap }} | grep -q "[a-z0-9]\+_[0-9.]\+_.*\.snap"; then
+          login=$(mktemp)
+          echo "Stable version of $snap_name found, so let's promote it"
+          echo "${{ secrets.SNAPCRAFT_LOGIN }}" > "$login"
+          snapcraft login --with "$login"
+          last_revision=$(snapcraft list-revisions $snap_name \
+            --arch="$(dpkg --print-architecture)" | \
+              head -n2 | tail -n1 | cut -f1 -d ' ')
+          snapcraft release $snap_name $last_revision stable
+        fi
