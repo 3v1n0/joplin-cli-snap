@@ -75,8 +75,13 @@ parts:
       - SUDO_GID: '0'
       - SUDO_USER: root
       - PATH: "${PATH}:${SNAPCRAFT_PART_INSTALL}/bin"
+      - VERSION_OVERRIDE: ''
     override-build: |
       tar xzf node.tar.gz -C "${SNAPCRAFT_PART_INSTALL}/" --strip-components=1
+
+      if [ -n "$VERSION_OVERRIDE" ]; then
+        git checkout "cli-v$VERSION_OVERRIDE"
+      fi
 
       if git describe --tags --match "cli-v*" --candidates=0; then
         # We're on release commit, let's just use the released version!
