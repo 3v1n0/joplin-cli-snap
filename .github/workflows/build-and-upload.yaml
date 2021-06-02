@@ -21,10 +21,7 @@ jobs:
         snap_file=${{ steps.snapcraft-build.outputs.snap }}
         snap_name=$(echo "$snap_file" | grep "[a-z0-9]\+_" -o | head -1 | sed "s/_//")
         if echo "$snap_file" | grep -q "[a-z0-9]\+_[0-9.]\+_.*\.snap"; then
-          login=$(mktemp)
           echo "Stable version of $snap_name found, so let's promote it"
-          echo "${{ secrets.SNAPCRAFT_LOGIN }}" > "$login"
-          snapcraft login --with "$login"
           last_revision=$(snapcraft list-revisions $snap_name \
             --arch="$(dpkg --print-architecture)" | \
               head -n2 | tail -n1 | cut -f1 -d ' ')
