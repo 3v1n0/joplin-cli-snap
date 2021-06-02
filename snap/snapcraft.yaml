@@ -101,6 +101,8 @@ parts:
       fi
     stage-packages:
       - libsecret-1-0
+    prime:
+      - -include
 
   editors:
     plugin: nil
