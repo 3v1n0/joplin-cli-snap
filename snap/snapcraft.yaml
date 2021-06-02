@@ -62,7 +62,6 @@ parts:
       fi
 
       snapcraftctl pull
-      snapcraftctl set-version $(git describe --tags --match "cli-v*" | sed s,^cli-v,,)
 
       node_base_path=https://nodejs.org/dist/latest-v${NODE_MAJOR_VERSION}.x/
       node_archive=$(curl "$node_base_path" |
@@ -84,6 +83,8 @@ parts:
         npm install -g --prefix "${SNAPCRAFT_PART_INSTALL}" joplin
         snapcraftctl set-version $(npm view -g joplin version)
         exit 0
+      else
+        snapcraftctl set-version $(git describe --tags --match "cli-v*" | sed s,^cli-v,,)
       fi
 
       npm install
