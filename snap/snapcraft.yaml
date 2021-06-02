@@ -132,6 +132,8 @@ parts:
 layout:
   /usr/libexec/neovim:
     bind: $SNAP/usr/libexec/neovim
+  /usr/share/nvim:
+    bind: $SNAP/usr/share/nvim
   /usr/share/nano:
     bind: $SNAP/usr/share/nano
   /etc/nanorc:
