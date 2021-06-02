@@ -75,7 +75,7 @@ parts:
       - SUDO_GID: '0'
       - SUDO_USER: root
       - PATH: "${PATH}:${SNAPCRAFT_PART_INSTALL}/bin"
-      - VERSION_OVERRIDE: '1.8.1'
+      - VERSION_OVERRIDE: ''
     override-build: |
       tar xzf node.tar.gz -C "${SNAPCRAFT_PART_INSTALL}/" --strip-components=1
 
