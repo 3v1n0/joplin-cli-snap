@@ -33,6 +33,9 @@ jobs:
           echo "${{ secrets.SNAPCRAFT_LOGIN }}" > "$login"
           snapcraft login --with "$login"
           rm "$login"
+          # Sleep a bit, waiting the revision to be visible
+          set -x
+          sleep 40
           last_revision=$(snapcraft list-revisions $snap_name \
             --arch="$(dpkg --print-architecture)" | \
               head -n2 | tail -n1 | cut -f1 -d ' ')
