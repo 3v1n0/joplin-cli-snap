@@ -3,13 +3,23 @@ on: [push]
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform:
+        - amd64
+        - armhf
+        - arm64
     steps:
     - uses: actions/checkout@v2
-    - uses: snapcore/action-build@v1
+    - name: Snapcraft
+      uses: diddlesnaps/snapcraft-multiarch-action@v1
+      with:
+        architecture: ${{ matrix.platform }}
       id: snapcraft-build
       env:
         TERM: dumb
-    - uses: snapcore/action-publish@v1
+    - name: Publish
+      uses: snapcore/action-publish@v1
       env:
         TERM: dumb
       with:
