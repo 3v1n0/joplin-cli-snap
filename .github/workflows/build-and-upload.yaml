@@ -23,6 +23,12 @@ jobs:
         store_login: ${{ secrets.SNAPCRAFT_LOGIN }}
         snap: ${{ steps.snapcraft-build.outputs.snap }}
         release: edge
+    - name: Dummy Test
+      run: |
+        set -x
+        sudo snap install --dangerous ${{ steps.snapcraft-build.outputs.snap }}
+        joplin version
+        joplin help
     - name: Promote stable versions
       run: |
         snap_file=${{ steps.snapcraft-build.outputs.snap }}
