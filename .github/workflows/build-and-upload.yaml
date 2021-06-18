@@ -46,4 +46,5 @@ jobs:
             --arch="$(dpkg --print-architecture)" | \
               head -n2 | tail -n1 | cut -f1 -d ' ')
           snapcraft release $snap_name $last_revision stable
+          snapcraft logout
         fi
