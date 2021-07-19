@@ -1,9 +1,7 @@
 name: Build and push to store
 on:
   push:
-    branches: [ master ]
-  schedule:
-    - cron: 0 5 * * 0
+    branches: [ stable ]
 
 jobs:
   build:
