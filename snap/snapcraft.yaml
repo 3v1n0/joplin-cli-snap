@@ -85,7 +85,11 @@ parts:
 
       if git describe --tags --match "cli-v*" --candidates=0; then
         # We're on release commit, let's just use the released version!
-        npm install -g --prefix "${SNAPCRAFT_PART_INSTALL}" joplin
+        pkg=joplin
+        if [ -n "$VERSION_OVERRIDE" ]; then
+          pkg="joplin@$VERSION_OVERRIDE";
+        fi
+        npm install -g --prefix "${SNAPCRAFT_PART_INSTALL}" "$pkg"
         snapcraftctl set-version $(npm view -g joplin version)
         exit 0
       else
