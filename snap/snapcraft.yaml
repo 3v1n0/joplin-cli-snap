@@ -90,7 +90,7 @@ parts:
           pkg="joplin@$VERSION_OVERRIDE";
         fi
         npm install -g --prefix "${SNAPCRAFT_PART_INSTALL}" "$pkg"
-        snapcraftctl set-version $(npm view -g joplin version)
+        snapcraftctl set-version $(npm view -g "$pkg" version)
         exit 0
       else
         snapcraftctl set-version $(git describe --tags --match "cli-v*" | sed s,^cli-v,,)
