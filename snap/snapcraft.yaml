@@ -50,7 +50,7 @@ parts:
       - on s390x:
         - libvips-dev
     override-pull: |
-      NODE_MAJOR_VERSION=14
+      NODE_MAJOR_VERSION=16
       node_arch=${SNAPCRAFT_TARGET_ARCH}
 
       if [ "$node_arch" = "amd64" ]; then
