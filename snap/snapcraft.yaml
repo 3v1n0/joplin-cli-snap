@@ -102,9 +102,14 @@ parts:
       cd packages/app-cli
       module_name=$(node -p "try { require('./package.json').name } catch(e) {''}")
 
+      npm run build
+
+      # cd build
+      # pack="$(npm pack | tail -n 1)"
+      # tar tf "$pack"
+
+      cd build && npm install -g --production --prefix "${SNAPCRAFT_PART_INSTALL}"
       module_path="${SNAPCRAFT_PART_INSTALL}"/lib/node_modules/$module_name
-      cp -v app/*.js build
-      cd build && npm install -g --prefix "${SNAPCRAFT_PART_INSTALL}"
       if [ -L "$module_path" ]; then
         target=$(realpath "$module_path")
         rm -f "$module_path"
