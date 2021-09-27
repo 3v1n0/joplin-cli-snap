@@ -78,6 +78,7 @@ parts:
       - VERSION_OVERRIDE: ''
     override-build: |
       tar xzf node.tar.gz -C "${SNAPCRAFT_PART_INSTALL}/" --strip-components=1
+      npm install -g npm
 
       if [ -n "$VERSION_OVERRIDE" ]; then
         git checkout "cli-v$VERSION_OVERRIDE"
